@@ -21,6 +21,28 @@
         "actual": { "cell": "B3" },
         "budget": { "cell": "C3" }
       }
+    },
+    {
+      "name": "Operating Margin",
+      "question_template": "Why is the operating margin {current_value}% compared to the budgeted {budgeted_value}%?",
+      "weight": 0.7,
+      "threshold": 8,
+      "data_source": {
+        "sheet": "Financials",
+        "actual": { "cell": "B4" },
+        "budget": { "cell": "C4" }
+      }
+    },
+    {
+      "name": "Cash Flow",
+      "question_template": "Why is the cash flow {current_value}% compared to the budgeted {budgeted_value}%?",
+      "weight": 0.8,
+      "threshold": 6,
+      "data_source": {
+        "sheet": "Financials",
+        "actual": { "cell": "B5" },
+        "budget": { "cell": "C5" }
+      }
     }
   ]
 }
