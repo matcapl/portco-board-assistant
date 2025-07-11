@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portco Board Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="https://www.fordhouse.team/favicon.ico" type="image/x-icon">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+  <div id="root"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const FileUpload = ({ onUpload }) => {
+      const [files, setFiles] = useState([]);
+
+      const handleDrop = (e) => {
+        e.preventDefault();
+        const newFiles = Array.from(e.dataTransfer.files);
+        setFiles(newFiles);
+      };
+
+      const handleChange = (e) => {
+        const newFiles = Array.from(e.target.files);
+        setFiles(newFiles);
+      };
+
+      const handleAnalyze = () => {
+        if (files.length > 0) {
+          onUpload(files[0]); // Process one file
+        }
+      };
+
+      return (
+        <div className="max-w-2xl mx-auto mt-8">
+          <div
+            className="border-2 border-dashed border-blue-600 p-6 rounded-lg text-center"
+            onDrop={handleDrop}
+            onDragOver={(e) => e.preventDefault()}
+          >
+            <input
+              type="file"
+              accept=".xlsx"
+              onChange={handleChange}
+              className="hidden"
+              id="fileInput"
+            />
+            <label htmlFor="fileInput" className="cursor-pointer text-blue-400 hover:text-blue-300">
+              Drag 'n' drop an Excel file here, or click to select
+            </label>
+          </div>
+          {files.length === 0 ? (
+            <p className="mt-4 text-red-400">Please upload at least one file</p>
+          ) : (
+            <div className="mt-4">
+              <p>Files uploaded for analysis:</p>
+              <ul className="list-disc list-inside">
+                {files.map((file, index) => (
+                  <li key={index}>{file.name}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <button
+            onClick={handleAnalyze}
+            className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            disabled={files.length === 0}
+          >
+            Generate Pre-Board Meeting Notes
+          </button>
+        </div>
+      );
+    };
+
+    const Results = ({ results, files }) => (
+      <div className="max-w-2xl mx-auto mt-8">
+        <h2 className="text-2xl font-semibold">Analysis Results</h2>
+        <p className="mt-2">Based on: {files.join(', ')}</p>
+        <ul className="mt-4 space-y-2">
+          {results.map((item, index) => (
+            <li
+              key={index}
+              className={`p-4 rounded-lg ${
+                item.priorityScore > 0.8 ? 'bg-red-900' : item.priorityScore > 0.4 ? 'bg-yellow-900' : 'bg-green-900'
+              }`}
+            >
+              <span className="font-bold">{item.type === 'question' ? 'Q: ' : 'Obs: '}</span>
+              {item.text} (Priority: {item.priorityScore.toFixed(2)})
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+
+    const App = () => {
+      const [results, setResults] = useState(null);
+      const [loading, setLoading] = useState(false);
+
+      const handleUpload = async (file) => {
+        setLoading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const response = await fetch('/api/analyze', {
+            method: 'POST',
+            body: formData,
+          });
+          const data = await response.json();
+          if (data.error) {
+            alert(data.error);
+          } else {
+            setResults(data);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('An error occurred during analysis. Please ensure the back-end is running.');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="container mx-auto px-4 py-8">
+          <header className="flex items-center justify-center">
+            <img src="https://www.fordhouse.team/favicon.ico" alt="Fordhouse Logo" className="h-12 mr-4" />
+            <h1 className="text-3xl font-bold">Portco Board Assistant</h1>
+          </header>
+          <FileUpload onUpload={handleUpload} />
+          {loading && <p className="text-center mt-4">Analyzing...</p>}
+          {results && <Results results={results.results} files={results.files} />}
+        </div>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

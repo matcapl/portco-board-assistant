@@ -1,0 +1,26 @@
+{
+  "metrics": [
+    {
+      "name": "Revenue Growth",
+      "question_template": "Why is the revenue growth {current_value}% compared to the budgeted {budgeted_value}%?",
+      "weight": 0.8,
+      "threshold": 5,
+      "data_source": {
+        "sheet": "Financials",
+        "actual": { "cell": "B2" },
+        "budget": { "cell": "C2" }
+      }
+    },
+    {
+      "name": "Gross Margin",
+      "question_template": "What caused the gross margin to be {current_value}% instead of the budgeted {budgeted_value}%?",
+      "weight": 0.7,
+      "threshold": 3,
+      "data_source": {
+        "sheet": "Financials",
+        "actual": { "cell": "B3" },
+        "budget": { "cell": "C3" }
+      }
+    }
+  ]
+}
